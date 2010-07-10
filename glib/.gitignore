@@ -1,0 +1,11 @@
+Makefile
+glib-enum-types.c
+glib-enum-types.h
+glib2.gemspec
+mkmf.log
+ruby-glib2.pc
+src/Makefile
+src/glib-enum-types.c
+src/glib-enum-types.h
+src/glib2.bundle
+src/glib2.so
