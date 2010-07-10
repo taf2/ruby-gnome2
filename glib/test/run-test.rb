@@ -18,4 +18,8 @@ require 'glib-test-utils'
 
 require 'glib2'
 
+if !defined?(Test::Unit::AutoRunner)
+  require 'test-unit'
+end
+
 exit Test::Unit::AutoRunner.run(true, base)
