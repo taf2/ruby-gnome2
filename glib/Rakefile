@@ -1,0 +1,66 @@
+require 'rake/clean'
+CLEAN.include '**/*.o'
+CLEAN.include "**/*.#{Config::MAKEFILE_CONFIG['DLEXT']}"
+CLOBBER.include 'doc'
+CLOBBER.include '**/*.log'
+CLOBBER.include '**/Makefile'
+CLOBBER.include '**/extconf.h'
+
+# Determine the current version of the software
+def ruby_glib_version
+  buf = File.read('src/rbglib.h')
+  if buf =~ /\s*RBGLIB_MAJOR_VERSION\s*(\d.+)/
+    major = $1
+  else
+    major = 0
+  end
+  if buf =~ /\s*RBGLIB_MINOR_VERSION\s*(\d.+)/
+    minor = $1
+  else
+    minor = 0
+  end
+  if buf =~ /\s*RBGLIB_MICRO_VERSION\s*(\d.+)/
+    micro = $1
+  else
+    micro = 0
+  end
+  "#{major}.#{minor}.#{micro}"
+end
+
+CURRENT_VERSION = ruby_glib_version
+
+desc "Default Task (Test project)"
+task :default => :test
+
+# Make tasks -----------------------------------------------------
+make_program = (/mswin/ =~ RUBY_PLATFORM) ? 'nmake' : 'make'
+MAKECMD = ENV['MAKE_CMD'] || make_program
+MAKEOPTS = ENV['MAKE_OPTS'] || ''
+
+GLIB_SO = "src/glib2.#{Config::MAKEFILE_CONFIG['DLEXT']}"
+
+file 'Makefile' => 'extconf.rb' do
+  sh "ruby extconf.rb #{ENV['EXTCONF_OPTS']}"
+end
+
+def make(target = '')
+  pid = system("#{MAKECMD} #{MAKEOPTS} #{target}")
+  $?.exitstatus
+end
+
+# Let make handle dependencies between c/o/so - we'll just run it. 
+file GLIB_SO => (['Makefile'] + Dir['src/*.c'] + Dir['src/*.h']) do
+  m = make
+  fail "Make failed (status #{m})" unless m == 0
+end
+
+desc "Configure Glib2"
+task :configure => ['Makefile']
+
+desc "Compile the shared object"
+task :compile => [GLIB_SO]
+
+desc "Run glib tests"
+task :test => :compile do
+  sh "ruby test/run-test.rb"
+end
