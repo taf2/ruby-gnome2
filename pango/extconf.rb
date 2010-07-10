@@ -5,14 +5,28 @@ extconf.rb for Ruby/Pango extention library
 PACKAGE_NAME = "pango"
 PACKAGE_ID   = "pango"
 
-TOPDIR = File.expand_path(File.dirname(__FILE__) + '/..')
-MKMF_GNOME2_DIR = TOPDIR + '/glib/src/lib'
-SRCDIR = TOPDIR + '/pango/src'
+begin
+  require 'mkmf-gnome2'
+  USE_GLIB_GEM = true
+  TOPDIR = File.expand_path(File.dirname(__FILE__) )
+  SRCDIR = TOPDIR + '/src'
+  require 'glib2'
+  puts 'build with gem'
 
-$LOAD_PATH.unshift MKMF_GNOME2_DIR
-$LOAD_PATH << "E:\\ruby\\lib\\ruby\\1.8\\i386-mswin32"
+rescue LoadError => e
 
-require 'mkmf-gnome2'
+  USE_GLIB_GEM = false
+
+  TOPDIR = File.expand_path(File.dirname(__FILE__) + '/..')
+  MKMF_GNOME2_DIR = TOPDIR + '/glib/src/lib'
+  SRCDIR = TOPDIR + '/pango/src'
+
+  $LOAD_PATH.unshift MKMF_GNOME2_DIR
+  $LOAD_PATH << "E:\\ruby\\lib\\ruby\\1.8\\i386-mswin32"
+
+  require 'mkmf-gnome2'
+
+end
 
 PKGConfig.have_package(PACKAGE_ID) or exit 1
 setup_win32(PACKAGE_NAME)
@@ -34,7 +48,13 @@ if PKGConfig.have_package('pangocairo')
   check_cairo
 end
 
-add_depend_package("glib2", "glib/src", TOPDIR)
+if USE_GLIB_GEM
+  
+  path = File.expand_path(ENV['GEM_HOME'] + "/gems/glib2-#{GLib::BINDING_VERSION.join('.')}/src")
+  add_depend_package("glib2", path, '/')
+else
+  add_depend_package("glib2", "glib/src", TOPDIR)
+end
 
 add_distcleanfile("rbpangoinits.c")
 
