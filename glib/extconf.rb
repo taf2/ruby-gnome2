@@ -2,9 +2,9 @@
 extconf.rb for Ruby/GLib extention library
 =end
 
-TOPDIR = File.expand_path(File.dirname(__FILE__) + '/..')
-MKMF_GNOME2_DIR = TOPDIR + '/glib/src/lib'
-SRCDIR = TOPDIR + '/glib/src'
+TOPDIR = File.expand_path(File.dirname(__FILE__))
+MKMF_GNOME2_DIR = TOPDIR + '/src/lib'
+SRCDIR = TOPDIR + '/src'
 
 $LOAD_PATH.unshift MKMF_GNOME2_DIR
 
