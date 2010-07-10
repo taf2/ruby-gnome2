@@ -1,0 +1,36 @@
+Gem::Specification.new do |s|
+  s.name    = "glib2"
+  s.authors = ["ruby-gnome2/AUTHORS"]
+  s.version = '<%= CURRENT_VERSION %>'
+  s.date    = '<%= Time.now.strftime("%Y-%m-%d") %>'
+  s.description = %q{Ruby/GLib2 is a Ruby binding of GLib-2.x.}
+  s.email   = 'todd.fisher@gmail.com'
+  s.extra_rdoc_files = ['README']
+  <%
+    files = ['ChangeLog', 'README', 'Rakefile', 'extconf.rb'] +
+            Dir["src/**/**.rb"] + Dir["src/**/**.c"] + Dir["src/**/**.h"] + Dir["sample/**"]
+
+    if ENV['BINARY_PACKAGE']
+      files += Dir['src/**/*.{o,so,bundle}']
+    end
+  %>
+  s.files = <%= files.inspect %>
+  s.require_paths = ['src']
+  s.rubyforge_project = 'glib2'
+  s.summary = %q{Ruby glib2 bindings}
+  s.test_files = <%= Dir['test/**/**.rb'].inspect %>
+  <% unless ENV['BINARY_PACKAGE'] %>
+    s.extensions << 'extconf.rb'
+  <% end %>
+
+  #### Documentation and testing.
+  s.has_rdoc = true
+  s.homepage = 'http://ruby-gnome2.sourceforge.jp/'
+  s.rdoc_options = ['--main', 'README']
+
+  <% if ENV['BINARY_PACKAGE'] %>
+    s.platform = Gem::Platform::CURRENT
+  <% else %>
+    s.platform = Gem::Platform::RUBY
+  <% end %>
+end
