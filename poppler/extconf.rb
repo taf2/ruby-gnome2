@@ -5,22 +5,42 @@ extconf.rb for Ruby/Poppler extention library
 PACKAGE_NAME = "poppler"
 PACKAGE_ID = "poppler-glib"
 
-TOPDIR = File.expand_path(File.dirname(__FILE__) + '/..')
-MKMF_GNOME2_DIR = TOPDIR + '/glib/src/lib'
-SRCDIR = TOPDIR + '/poppler/src'
+begin
+  require 'mkmf-gnome2'
+  USE_GLIB_GEM = true
+  TOPDIR = File.expand_path(File.dirname(__FILE__) )
+  SRCDIR = TOPDIR + '/src'
+  require 'glib2'
+  require 'gdk_pixbuf2'
+  require 'gtk2/base'
 
-$LOAD_PATH.unshift MKMF_GNOME2_DIR
+rescue LoadError => e
+  TOPDIR = File.expand_path(File.dirname(__FILE__) + '/..')
+  MKMF_GNOME2_DIR = TOPDIR + '/glib/src/lib'
+  SRCDIR = TOPDIR + '/poppler/src'
 
-require 'mkmf-gnome2'
+  $LOAD_PATH.unshift MKMF_GNOME2_DIR
+
+  require 'mkmf-gnome2'
+end
 
 PKGConfig.have_package(PACKAGE_ID, 0, 8, 0) or exit 1
 setup_win32(PACKAGE_NAME)
 
 check_cairo
 
-add_depend_package("glib2", "glib/src", TOPDIR)
-add_depend_package("gtk2", "gtk/src", TOPDIR)
-add_depend_package("gdk_pixbuf2", "gdkpixbuf", TOPDIR)
+if USE_GLIB_GEM
+  path = File.expand_path(ENV['GEM_HOME'] + "/gems/glib2-#{GLib::BINDING_VERSION.join('.')}/src")
+  add_depend_package("glib2", path, '/')
+  path = File.expand_path(ENV['GEM_HOME'] + "/gems/gdkpixbuf-#{GLib::BINDING_VERSION.join('.')}/src")
+  add_depend_package("gdk_pixbuf2", path, '/')
+  path = File.expand_path(ENV['GEM_HOME'] + "/gems/gtk2-#{GLib::BINDING_VERSION.join('.')}/src")
+  add_depend_package("gtk2", path, '/')
+else
+  add_depend_package("glib2", "glib/src", TOPDIR)
+  add_depend_package("gtk2", "gtk/src", TOPDIR)
+  add_depend_package("gdk_pixbuf2", "gdkpixbuf", TOPDIR)
+end
 
 make_version_header("POPPLER", PACKAGE_ID)
 

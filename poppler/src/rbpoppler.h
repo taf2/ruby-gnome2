@@ -9,6 +9,11 @@
 #include <rbgobject.h>
 
 #include <poppler.h>
+#include "rbglib.h"
+
+#define RBPOPPLER_MAJOR_VERSION RBGLIB_MAJOR_VERSION
+#define RBPOPPLER_MINOR_VERSION RBGLIB_MINOR_VERSION 
+#define RBPOPPLER_MICRO_VERSION RBGLIB_MICRO_VERSION
 
 #ifndef POPPLER_TYPE_INDEX_ITER
 #  define POPPLER_TYPE_INDEX_ITER (poppler_index_iter_get_type ())
