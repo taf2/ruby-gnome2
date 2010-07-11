@@ -48,7 +48,6 @@ if PKGConfig.have_package('pangocairo')
 end
 
 if USE_GLIB_GEM
-  
   path = File.expand_path(ENV['GEM_HOME'] + "/gems/glib2-#{GLib::BINDING_VERSION.join('.')}/src")
   add_depend_package("glib2", path, '/')
 else

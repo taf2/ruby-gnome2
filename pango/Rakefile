@@ -8,23 +8,8 @@ CLOBBER.include '**/extconf.h'
 
 # Determine the current version of the software
 def ruby_pango_version
-  buf = File.read('src/rbpango.h')
-  if buf =~ /\s*RBPANGO_MAJOR_VERSION\s*(\d.+)/
-    major = $1
-  else
-    major = 0
-  end
-  if buf =~ /\s*RBPANGO_MINOR_VERSION\s*(\d.+)/
-    minor = $1
-  else
-    minor = 0
-  end
-  if buf =~ /\s*RBPANGO_MICRO_VERSION\s*(\d.+)/
-    micro = $1
-  else
-    micro = 0
-  end
-  "#{major}.#{minor}.#{micro}"
+  require 'glib2'
+  GLib::BINDING_VERSION.join('.')
 end
 
 CURRENT_VERSION = ruby_pango_version
