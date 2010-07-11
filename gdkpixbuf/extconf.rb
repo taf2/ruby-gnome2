@@ -5,13 +5,21 @@ extconf.rb for Ruby/GdkPixbuf2 extention library
 PACKAGE_NAME = "gdk_pixbuf2"
 PACKAGE_ID   = "gdk-pixbuf-2.0"
 
-TOPDIR = File.expand_path(File.dirname(__FILE__) + '/..')
-MKMF_GNOME2_DIR = TOPDIR + '/glib/src/lib'
-SRCDIR = TOPDIR + '/gdkpixbuf'
+begin
+  require 'mkmf-gnome2'
+  USE_GNOME_GEMS=true
+  TOPDIR = File.expand_path(File.dirname(__FILE__))
+  SRCDIR = TOPDIR
+  require 'glib2'
+rescue LoadError => e
+  TOPDIR = File.expand_path(File.dirname(__FILE__) + '/..')
+  MKMF_GNOME2_DIR = TOPDIR + '/glib/src/lib'
+  SRCDIR = TOPDIR + '/gdkpixbuf'
 
-$LOAD_PATH.unshift MKMF_GNOME2_DIR
+  $LOAD_PATH.unshift MKMF_GNOME2_DIR
 
-require 'mkmf-gnome2'
+  require 'mkmf-gnome2'
+end
 
 PKGConfig.have_package(PACKAGE_ID) or exit 1
 
@@ -26,6 +34,11 @@ if PKGConfig.have_package('gdk-2.0')
   check_cairo
 end
 
-add_depend_package("glib2", "glib/src", TOPDIR)
+if USE_GNOME_GEMS
+  path = File.expand_path(ENV['GEM_HOME'] + "/gems/glib2-#{GLib::BINDING_VERSION.join('.')}/src")
+  add_depend_package("glib2", path, '/')
+else
+  add_depend_package("glib2", "glib/src", TOPDIR)
+end
 create_pkg_config_file("Ruby/GdkPixbuf2", PACKAGE_ID)
 create_makefile_at_srcdir(PACKAGE_NAME, SRCDIR)

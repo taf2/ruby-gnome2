@@ -1,0 +1,38 @@
+Gem::Specification.new do |s|
+  s.name    = "gdkpixbuf"
+  s.authors = ["ruby-gnome2/AUTHORS"]
+  s.version = '<%= CURRENT_VERSION %>'
+  s.date    = '<%= Time.now.strftime("%Y-%m-%d") %>'
+  s.description = %q{Ruby/GdkPixbuf2 is a Ruby binding of GdkPixbuf-2.x.}
+  s.email   = 'todd.fisher@gmail.com'
+  s.extra_rdoc_files = ['README']
+  <%
+    files = ['ChangeLog', 'README', 'Rakefile', 'extconf.rb'] +
+            Dir["**/**.rb"] + Dir["**/**.c"] + Dir["**/**.h"] + Dir["sample/**"]
+
+    if ENV['BINARY_PACKAGE']
+      files += Dir['src/**/*.{o,so,bundle}']
+    end
+  %>
+  s.files = <%= files.inspect %>
+  s.require_paths = ['.']
+  s.rubyforge_project = 'gdkpixbuf'
+  s.summary = %q{Ruby gdkpixbuf bindings}
+  s.test_files = <%= Dir['test/**/**.rb'].inspect %>
+  s.add_dependency('glib2')
+  s.add_dependency('cairo')
+  <% unless ENV['BINARY_PACKAGE'] %>
+    s.extensions << 'extconf.rb'
+  <% end %>
+
+  #### Documentation and testing.
+  s.has_rdoc = true
+  s.homepage = 'http://ruby-gnome2.sourceforge.jp/'
+  s.rdoc_options = ['--main', 'README']
+
+  <% if ENV['BINARY_PACKAGE'] %>
+    s.platform = Gem::Platform::CURRENT
+  <% else %>
+    s.platform = Gem::Platform::RUBY
+  <% end %>
+end

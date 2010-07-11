@@ -1,0 +1,67 @@
+require 'rake/clean'
+CLEAN.include '**/*.o'
+CLEAN.include "**/*.#{Config::MAKEFILE_CONFIG['DLEXT']}"
+CLOBBER.include 'doc'
+CLOBBER.include '**/*.log'
+CLOBBER.include '**/Makefile'
+CLOBBER.include '**/extconf.h'
+
+# Determine the current version of the software
+def ruby_gdkpixbuf_version
+  gem 'glib2'
+  require 'glib2'
+  GLib::BINDING_VERSION.join('.')
+end
+
+CURRENT_VERSION = ruby_gdkpixbuf_version
+
+# Make tasks -----------------------------------------------------
+make_program = (/mswin/ =~ RUBY_PLATFORM) ? 'nmake' : 'make'
+MAKECMD = ENV['MAKE_CMD'] || make_program
+MAKEOPTS = ENV['MAKE_OPTS'] || ''
+
+GDKPIXBUF_SO = "gdk_pixbuf2.#{Config::MAKEFILE_CONFIG['DLEXT']}"
+
+file 'Makefile' => 'extconf.rb' do
+  sh "ruby extconf.rb #{ENV['EXTCONF_OPTS']}"
+end
+
+def make(target = '')
+  pid = system("#{MAKECMD} #{MAKEOPTS} #{target}")
+  $?.exitstatus
+end
+
+# Let make handle dependencies between c/o/so - we'll just run it. 
+file GDKPIXBUF_SO => (['Makefile'] + Dir['*.c'] + Dir['*.h']) do
+  m = make
+  fail "Make failed (status #{m})" unless m == 0
+end
+
+desc "Configure gdkpixbuf"
+task :configure => ['Makefile']
+
+desc "Compile the shared object"
+task :compile => [GDKPIXBUF_SO]
+
+task :default => :compile
+
+desc 'Generate gem specification'
+task :gemspec do
+  require 'erb'
+  tspec = ERB.new(File.read(File.join(File.dirname(__FILE__),'gdkpixbuf.gemspec.erb')))
+  File.open(File.join(File.dirname(__FILE__),'gdkpixbuf.gemspec'),'wb') do|f|
+    f << tspec.result
+  end
+end
+
+desc 'Build gem'
+task :package => :gemspec do
+  require 'rubygems/specification'
+  spec_source = File.read File.join(File.dirname(__FILE__),'gdkpixbuf.gemspec')
+  spec = nil
+  # see: http://gist.github.com/16215
+  Thread.new { spec = eval("$SAFE = 3\n#{spec_source}") }.join
+  spec.validate
+  Gem::Builder.new(spec).build
+end
+
