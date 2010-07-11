@@ -5,13 +5,27 @@ extconf.rb for Ruby/GTK extention library
 PACKAGE_NAME = "gtk2"
 PKG_CONFIG_ID = "gtk+-2.0"
 
-TOPDIR = File.expand_path(File.dirname(__FILE__) + '/..')
-MKMF_GNOME2_DIR = TOPDIR + '/glib/src/lib'
-SRCDIR = TOPDIR + '/gtk/src'
+begin
+  require 'mkmf-gnome2'
+  TOPDIR = File.expand_path(File.dirname(__FILE__))
+  SRCDIR = TOPDIR + '/src'
+  require 'glib2'
+  require 'pango'
+  require 'atk'
+  require 'gdk_pixbuf2'
+  USE_GNOME_GEMS=true
+rescue LoadError => e
+  puts "Not using gems"
+  USE_GNOME_GEMS=false
 
-$LOAD_PATH.unshift MKMF_GNOME2_DIR
+  TOPDIR = File.expand_path(File.dirname(__FILE__) + '/..')
+  MKMF_GNOME2_DIR = TOPDIR + '/glib/src/lib'
+  SRCDIR = TOPDIR + '/gtk/src'
 
-require 'mkmf-gnome2'
+  $LOAD_PATH.unshift MKMF_GNOME2_DIR
+
+  require 'mkmf-gnome2'
+end
 
 #
 # detect GTK+ configurations
@@ -66,9 +80,20 @@ end
 have_func("rb_errinfo")
 
 check_cairo
-
-add_depend_package("glib2", "glib/src", TOPDIR)
-add_depend_package("pango", "pango/src", TOPDIR)
+if USE_GNOME_GEMS
+  path = File.expand_path(ENV['GEM_HOME'] + "/gems/glib2-#{GLib::BINDING_VERSION.join('.')}/src")
+  add_depend_package("glib2", path, '/')
+  path = File.expand_path(ENV['GEM_HOME'] + "/gems/pango-#{GLib::BINDING_VERSION.join('.')}/src")
+  add_depend_package("pango", path, '/')
+  path = File.expand_path(ENV['GEM_HOME'] + "/gems/atk-#{GLib::BINDING_VERSION.join('.')}/src")
+  add_depend_package("atk", path, '/')
+  path = File.expand_path(ENV['GEM_HOME'] + "/gems/gdkpixbuf-#{GLib::BINDING_VERSION.join('.')}/src")
+  add_depend_package("gdkpixbuf2", path, '/')
+else
+  add_depend_package("glib2", "glib/src", TOPDIR)
+  add_depend_package("pango", "pango/src", TOPDIR)
+  add_depend_package("atk", "atk/src", TOPDIR)
+end
 
 #
 # create Makefiles

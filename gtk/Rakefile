@@ -1,0 +1,71 @@
+require 'rake/clean'
+CLEAN.include '**/*.o'
+CLEAN.include "**/*.#{Config::MAKEFILE_CONFIG['DLEXT']}"
+CLOBBER.include 'doc'
+CLOBBER.include '**/*.log'
+CLOBBER.include '**/Makefile'
+CLOBBER.include '**/extconf.h'
+
+# Determine the current version of the software
+def ruby_gtk_version
+  require 'glib2'
+  GLib::BINDING_VERSION.join('.')
+end
+
+CURRENT_VERSION = ruby_gtk_version
+
+desc "Default Task (Test project)"
+task :default => :test
+
+# Make tasks -----------------------------------------------------
+make_program = (/mswin/ =~ RUBY_PLATFORM) ? 'nmake' : 'make'
+MAKECMD = ENV['MAKE_CMD'] || make_program
+MAKEOPTS = ENV['MAKE_OPTS'] || ''
+
+GTK_SO = "src/gtk2.#{Config::MAKEFILE_CONFIG['DLEXT']}"
+
+file 'Makefile' => 'extconf.rb' do
+  sh "ruby extconf.rb #{ENV['EXTCONF_OPTS']}"
+end
+
+def make(target = '')
+  pid = system("#{MAKECMD} #{MAKEOPTS} #{target}")
+  $?.exitstatus
+end
+
+# Let make handle dependencies between c/o/so - we'll just run it. 
+file GTK_SO => (['Makefile'] + Dir['src/*.c'] + Dir['src/*.h']) do
+  m = make
+  fail "Make failed (status #{m})" unless m == 0
+end
+
+desc "Configure Gtk"
+task :configure => ['Makefile']
+
+desc "Compile the shared object"
+task :compile => [GTK_SO]
+
+desc "Run gtk tests"
+task :test => :compile do
+  sh "ruby test/run-test.rb"
+end
+
+desc 'Generate gem specification'
+task :gemspec do
+  require 'erb'
+  tspec = ERB.new(File.read(File.join(File.dirname(__FILE__),'src','gtk.gemspec.erb')))
+  File.open(File.join(File.dirname(__FILE__),'gtk.gemspec'),'wb') do|f|
+    f << tspec.result
+  end
+end
+
+desc 'Build gem'
+task :package => :gemspec do
+  require 'rubygems/specification'
+  spec_source = File.read File.join(File.dirname(__FILE__),'gtk.gemspec')
+  spec = nil
+  # see: http://gist.github.com/16215
+  Thread.new { spec = eval("$SAFE = 3\n#{spec_source}") }.join
+  spec.validate
+  Gem::Builder.new(spec).build
+end
