@@ -8,8 +8,7 @@ CLOBBER.include '**/extconf.h'
 
 # Determine the current version of the software
 def ruby_pango_version
-  require 'glib2'
-  GLib::BINDING_VERSION.join('.')
+  "0.20.1"
 end
 
 CURRENT_VERSION = ruby_pango_version

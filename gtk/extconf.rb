@@ -6,6 +6,7 @@ PACKAGE_NAME = "gtk2"
 PKG_CONFIG_ID = "gtk+-2.0"
 
 begin
+  require 'rubygems'
   require 'mkmf-gnome2'
   TOPDIR = File.expand_path(File.dirname(__FILE__))
   SRCDIR = TOPDIR + '/src'
@@ -81,14 +82,11 @@ have_func("rb_errinfo")
 
 check_cairo
 if USE_GNOME_GEMS
-  path = File.expand_path(ENV['GEM_HOME'] + "/gems/glib2-#{GLib::BINDING_VERSION.join('.')}/src")
-  add_depend_package("glib2", path, '/')
-  path = File.expand_path(ENV['GEM_HOME'] + "/gems/pango-#{GLib::BINDING_VERSION.join('.')}/src")
-  add_depend_package("pango", path, '/')
-  path = File.expand_path(ENV['GEM_HOME'] + "/gems/atk-#{GLib::BINDING_VERSION.join('.')}/src")
-  add_depend_package("atk", path, '/')
-  path = File.expand_path(ENV['GEM_HOME'] + "/gems/gdkpixbuf-#{GLib::BINDING_VERSION.join('.')}/src")
-  add_depend_package("gdkpixbuf2", path, '/')
+  # locate the latest glib2 install and add the package dependency
+  add_depend_package("glib2", File.dirname(Gem.find_files('rbglib.h').first), '/')
+  add_depend_package("pango", File.dirname(Gem.find_files('rbpango.h').first), '/')
+  add_depend_package("atk", File.dirname(Gem.find_files('rbatk.h').first), '/')
+  add_depend_package("gdkpixbuf2", File.dirname(Gem.find_files('rbgdk-pixbuf.h').first), '/')
 else
   add_depend_package("glib2", "glib/src", TOPDIR)
   add_depend_package("pango", "pango/src", TOPDIR)

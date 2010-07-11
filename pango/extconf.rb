@@ -6,15 +6,15 @@ PACKAGE_NAME = "pango"
 PACKAGE_ID   = "pango"
 
 begin
+  require 'rubygems'
   require 'mkmf-gnome2'
-  USE_GLIB_GEM = true
+  USE_GNOME_GEMS = true
   TOPDIR = File.expand_path(File.dirname(__FILE__) )
   SRCDIR = TOPDIR + '/src'
   require 'glib2'
-
 rescue LoadError => e
 
-  USE_GLIB_GEM = false
+  USE_GNOME_GEMS = false
 
   TOPDIR = File.expand_path(File.dirname(__FILE__) + '/..')
   MKMF_GNOME2_DIR = TOPDIR + '/glib/src/lib'
@@ -47,8 +47,9 @@ if PKGConfig.have_package('pangocairo')
   check_cairo
 end
 
-if USE_GLIB_GEM
-  path = File.expand_path(ENV['GEM_HOME'] + "/gems/glib2-#{GLib::BINDING_VERSION.join('.')}/src")
+if USE_GNOME_GEMS
+  # locate the latest glib2 install and add the package dependency
+  path = File.dirname(Gem.find_files('rbglib.h').first)
   add_depend_package("glib2", path, '/')
 else
   add_depend_package("glib2", "glib/src", TOPDIR)

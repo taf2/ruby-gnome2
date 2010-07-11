@@ -6,6 +6,7 @@ PACKAGE_NAME = "atk"
 PACKAGE_ID   = "atk"
 
 begin
+  require 'rubygems'
   require 'mkmf-gnome2'
   USE_GNOME_GEMS=true
   TOPDIR = File.expand_path(File.dirname(__FILE__))
@@ -39,7 +40,8 @@ have_func('atk_text_clip_type_get_type', atk_header)
 have_func('atk_text_free_ranges', atk_header)
 
 if USE_GNOME_GEMS
-  path = File.expand_path(ENV['GEM_HOME'] + "/gems/glib2-#{GLib::BINDING_VERSION.join('.')}/src")
+  # locate the latest glib2 install and add the package dependency
+  path = File.dirname(Gem.find_files('rbglib.h').first)
   add_depend_package("glib2", path, '/')
 else
   add_depend_package("glib2", "glib/src", TOPDIR)

@@ -6,6 +6,7 @@ PACKAGE_NAME = "gdk_pixbuf2"
 PACKAGE_ID   = "gdk-pixbuf-2.0"
 
 begin
+  require 'rubygems'
   require 'mkmf-gnome2'
   USE_GNOME_GEMS=true
   TOPDIR = File.expand_path(File.dirname(__FILE__))
@@ -35,7 +36,8 @@ if PKGConfig.have_package('gdk-2.0')
 end
 
 if USE_GNOME_GEMS
-  path = File.expand_path(ENV['GEM_HOME'] + "/gems/glib2-#{GLib::BINDING_VERSION.join('.')}/src")
+  # locate the latest glib2 install and add the package dependency
+  path = File.dirname(Gem.find_files('rbglib.h').first)
   add_depend_package("glib2", path, '/')
 else
   add_depend_package("glib2", "glib/src", TOPDIR)
