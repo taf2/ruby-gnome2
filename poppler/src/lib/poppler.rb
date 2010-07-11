@@ -17,7 +17,7 @@ require "date"
 require "glib2"
 require "gdk_pixbuf2"
 begin
-  require "gtk2"
+  require "gtk2/base"
 rescue LoadError
 rescue
   if defined?(Gtk::InitError) and $!.class == Gtk::InitError
