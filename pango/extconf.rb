@@ -11,7 +11,6 @@ begin
   TOPDIR = File.expand_path(File.dirname(__FILE__) )
   SRCDIR = TOPDIR + '/src'
   require 'glib2'
-  puts 'build with gem'
 
 rescue LoadError => e
 

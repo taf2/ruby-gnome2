@@ -14,6 +14,10 @@
 #define PANGO_ENABLE_BACKEND
 #include <pango/pango.h>
 
+#define RBPANGO_MAJOR_VERSION 0
+#define RBPANGO_MINOR_VERSION 20
+#define RBPANGO_MICRO_VERSION 0
+
 #if HAVE_FREETYPE2
 #include <pango/pangofc-font.h>
 #endif
