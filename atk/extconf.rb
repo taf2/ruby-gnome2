@@ -5,13 +5,21 @@ extconf.rb for Ruby/Atk extention library
 PACKAGE_NAME = "atk"
 PACKAGE_ID   = "atk"
 
-TOPDIR = File.expand_path(File.dirname(__FILE__) + '/..') 
-SRCDIR = TOPDIR + '/atk/src'
-MKMF_GNOME2_DIR = TOPDIR + '/glib/src/lib'
+begin
+  require 'mkmf-gnome2'
+  USE_GNOME_GEMS=true
+  TOPDIR = File.expand_path(File.dirname(__FILE__))
+  SRCDIR = TOPDIR + '/src'
+  require 'glib2'
+rescue LoadError => e
+  TOPDIR = File.expand_path(File.dirname(__FILE__) + '/..') 
+  SRCDIR = TOPDIR + '/atk/src'
+  MKMF_GNOME2_DIR = TOPDIR + '/glib/src/lib'
 
-$LOAD_PATH.unshift MKMF_GNOME2_DIR
+  $LOAD_PATH.unshift MKMF_GNOME2_DIR
 
-require 'mkmf-gnome2'
+  require 'mkmf-gnome2'
+end
 
 PKGConfig.have_package(PACKAGE_ID) or exit 1
 setup_win32(PACKAGE_NAME)
@@ -30,7 +38,13 @@ have_func('atk_text_clip_type_get_type', atk_header)
 
 have_func('atk_text_free_ranges', atk_header)
 
-add_depend_package("glib2", "glib/src", TOPDIR)
+if USE_GNOME_GEMS
+  path = File.expand_path(ENV['GEM_HOME'] + "/gems/glib2-#{GLib::BINDING_VERSION.join('.')}/src")
+  add_depend_package("glib2", path, '/')
+else
+  add_depend_package("glib2", "glib/src", TOPDIR)
+end
+
 add_distcleanfile("rbatkinits.c")
 
 make_version_header("ATK", PACKAGE_ID)
